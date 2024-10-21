@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';  
+import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import DetailsScreen from '../app/DetailsScreen'; // Import DetailsScreen
 import PullToRefreshList from '../components/PullToRefreshList'; // Import the new component
@@ -23,6 +24,11 @@ const Fizzastore: React.FC<{ navigation: any }> = ({ navigation }) => {
   const fetchData = async () => {
     setLoading(true);
     try {
+      const storedData = await AsyncStorage.getItem('products');
+      if (storedData) {
+        setData(JSON.parse(storedData)); // Load data from AsyncStorage
+      }
+
       const response = await fetch('https://fakestoreapi.com/products');
       const json = await response.json();
 
@@ -33,6 +39,7 @@ const Fizzastore: React.FC<{ navigation: any }> = ({ navigation }) => {
       }));
 
       setData(formattedData);
+      await AsyncStorage.setItem('products', JSON.stringify(formattedData)); // Store data in AsyncStorage
     } catch (error) {
       console.error('Fetch Error:', error);
     } finally {
@@ -74,7 +81,7 @@ const App: React.FC = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Fizza Store">
-        <Stack.Screen name="                   Fizza Online Store" component={Fizzastore} />
+        <Stack.Screen name="Fizza Online Store" component={Fizzastore} />
         <Stack.Screen name="Details" component={DetailsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
